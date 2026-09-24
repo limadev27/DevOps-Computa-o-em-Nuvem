@@ -22,9 +22,9 @@ jobs:
     - name: Construir imagem
       run: |
         docker build \
-        -t ghcr.io/SEU_USUARIO/meu-site:latest \
+        -t ghcr.io/limadev27/meu-site:latest \
         .
     - name: Publicar imagem
       run: |
         docker push \
-        ghcr.io/SEU_USUARIO/meu-site:latest
+        ghcr.io/limadev27/meu-site:latest

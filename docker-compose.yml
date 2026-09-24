@@ -1,7 +1,7 @@
 services:
   portfolio:
     web:
-      image: ghcr.io/USUARIO/meu-site:latest
+      image: ghcr.io/limadev27/meu-site:latest
       container_name: meu-portifolio
       ports:
         - "8080:80"

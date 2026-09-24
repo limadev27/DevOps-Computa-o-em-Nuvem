@@ -1,15 +1,39 @@
-name: Meu primeiro workflow
-on:
-  push:
-    branches:
-      - main
+name: Testar aplicação
+  on:
+    push:
+      branches:
+        - main
 jobs:
   teste:
     runs-on: ubuntu-latest
     steps:
       - name: Baixar o código
         uses: actions/checkout@v4
-      - name: Mostrar mensagem
-        run: echo "Olá! Meu primeiro GitHub Actions!"
-      - name: Mostrar arquivos
-        run: ls -la
+      - name: Verificar Docker
+        run: docker --version
+      - name: Construir imagem
+        run: docker build -t meu-site .
+      - name: Executar container
+        run: |
+          docker run -d \
+            --name meu-site \
+            -p 8080:80 \
+            meu-site
+      - name: Diagnóstico
+        run: |  
+          echo "=== CONTAINER ==="
+          docker ps -a
+          echo "=== LOGS ==="
+          docker logs meu-site || true
+          echo "=== PORTAS ==="
+          docker port meu-site
+          echo "=== NGINX CONFIG ==="
+          docker exec meu-site nginx -t
+          echo "=== TESTE INTERNO ==="
+          docker exec meu-site wget -qO- http://127.0.0.1
+      - name: Testar Nginx
+        run: |
+          curl -4 -v http://127.0.0.1:8080
+      - name: Parar container
+        if: always()
+        run: docker stop meu-site || true

@@ -1,0 +1,30 @@
+name: Build e Deploy
+
+on:
+  push:
+    branches:
+      - main
+permissions:
+  contents: read  
+  packages: write
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Baixar código
+      uses: actions/checkout@v4
+    - name: Login no GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+    - name: Construir imagem
+      run: |
+        docker build \
+        -t ghcr.io/SEU_USUARIO/meu-site:latest \
+        .
+    - name: Publicar imagem
+      run: |
+        docker push \
+        ghcr.io/SEU_USUARIO/meu-site:latest

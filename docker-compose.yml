@@ -1,7 +1,8 @@
 services:
   portfolio:
-    build: .
-    container_name: meu-portifolio
-    ports:
-      - "8080:80"
-    restart: unless-stopped
+    web:
+      image: ghcr.io/USUARIO/meu-site:latest
+      container_name: meu-portifolio
+      ports:
+        - "8080:80"
+      restart: unless-stopped

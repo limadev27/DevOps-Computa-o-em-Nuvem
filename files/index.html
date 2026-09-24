@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nimbus — Infraestrutura em nuvem, redefinida</title>
+<meta name="description" content="Nimbus: orquestração de containers, deploy contínuo e escala automática para times de DevOps.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="cursor-glow" id="cursorGlow"></div>
+
+<nav class="nav" id="nav">
+  <div class="nav-inner">
+    <a href="#top" class="nav-logo">
+      <span class="nav-logo-mark"></span>
+      Nimbus
+    </a>
+    <ul class="nav-links">
+      <li><a href="#core">O motor</a></li>
+      <li><a href="#numeros">Números</a></li>
+      <li><a href="#recursos">Recursos</a></li>
+      <li><a href="#fluxo">Fluxo</a></li>
+    </ul>
+    <a href="#deploy" class="nav-cta">Começar</a>
+  </div>
+</nav>
+
+<main id="top">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-grid" aria-hidden="true"></div>
+    <div class="hero-content">
+      <p class="eyebrow-plain">Plataforma de orquestração em nuvem</p>
+      <h1 class="hero-title">
+        Infraestrutura que<br>
+        <span class="hero-title-accent">escala com você.</span>
+      </h1>
+      <p class="hero-sub">
+        Containers, pipelines e observabilidade em um só lugar.
+        Do primeiro <code>docker run</code> ao cluster em produção, sem trocar de ferramenta.
+      </p>
+      <div class="hero-actions">
+        <a href="#deploy" class="btn btn-primary">Ver em ação</a>
+        <a href="#core" class="btn btn-ghost">Como funciona</a>
+      </div>
+    </div>
+    <div class="scroll-hint" aria-hidden="true">
+      <span></span>
+    </div>
+  </section>
+
+  <!-- CORE / ENGINE REVEAL -->
+  <section class="core" id="core">
+    <div class="core-text reveal">
+      <h2>O núcleo que orquestra tudo.</h2>
+      <p>O Nimbus Core decide, em milissegundos, onde cada container roda, quando escalar e como se recuperar de uma falha — para que o seu time cuide do produto, não da infraestrutura.</p>
+    </div>
+
+    <div class="core-stage">
+      <div class="core-orb-wrap reveal">
+        <div class="core-orb">
+          <div class="core-orb-ring ring-1"></div>
+          <div class="core-orb-ring ring-2"></div>
+          <div class="core-orb-core"></div>
+        </div>
+        <div class="core-spec spec-a">
+          <span class="spec-label">Latência de agendamento</span>
+          <span class="spec-value">&lt; 40ms</span>
+        </div>
+        <div class="core-spec spec-b">
+          <span class="spec-label">Nós por cluster</span>
+          <span class="spec-value">até 5.000</span>
+        </div>
+        <div class="core-spec spec-c">
+          <span class="spec-label">Auto-recuperação</span>
+          <span class="spec-value">contínua</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <section class="stats" id="numeros">
+    <div class="stat reveal">
+      <span class="stat-number" data-count="99.99" data-suffix="%">0</span>
+      <span class="stat-label">de disponibilidade garantida</span>
+    </div>
+    <div class="stat reveal">
+      <span class="stat-number" data-count="120" data-suffix="k+">0</span>
+      <span class="stat-label">containers orquestrados por dia</span>
+    </div>
+    <div class="stat reveal">
+      <span class="stat-number" data-count="8" data-suffix="s">0</span>
+      <span class="stat-label">tempo médio de deploy</span>
+    </div>
+    <div class="stat reveal">
+      <span class="stat-number" data-count="40" data-suffix="+">0</span>
+      <span class="stat-label">regiões disponíveis</span>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="features" id="recursos">
+    <h2 class="section-title reveal">Tudo que um time de DevOps precisa.</h2>
+    <div class="feature-grid">
+      <article class="feature-card reveal" data-tilt>
+        <div class="feature-icon">⌘</div>
+        <h3>Escala automática</h3>
+        <p>Réplicas ajustadas em tempo real conforme carga de CPU, memória ou fila de requisições.</p>
+      </article>
+      <article class="feature-card reveal" data-tilt>
+        <div class="feature-icon">◐</div>
+        <h3>CI/CD nativo</h3>
+        <p>Pipeline de build, teste e deploy conectado direto ao seu repositório, sem scripts extras.</p>
+      </article>
+      <article class="feature-card reveal" data-tilt>
+        <div class="feature-icon">◈</div>
+        <h3>Observabilidade</h3>
+        <p>Métricas, logs e traces centralizados, com alertas antes que o usuário perceba o problema.</p>
+      </article>
+      <article class="feature-card reveal" data-tilt>
+        <div class="feature-icon">◇</div>
+        <h3>Zero-trust por padrão</h3>
+        <p>Cada serviço se autentica antes de se comunicar. Nenhuma rede interna é considerada segura.</p>
+      </article>
+      <article class="feature-card reveal" data-tilt>
+        <div class="feature-icon">◎</div>
+        <h3>Multi-nuvem</h3>
+        <p>Mesmo cluster lógico rodando entre provedores diferentes, sem reescrever manifestos.</p>
+      </article>
+      <article class="feature-card reveal" data-tilt>
+        <div class="feature-icon">↺</div>
+        <h3>Rollback instantâneo</h3>
+        <p>Uma versão anterior está sempre pronta para assumir, com um único comando.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- PIPELINE / FLOW -->
+  <section class="flow" id="fluxo">
+    <h2 class="section-title reveal">Do commit ao container, em quatro passos.</h2>
+    <div class="flow-line-wrap">
+      <div class="flow-line" id="flowLine"></div>
+      <ol class="flow-steps">
+        <li class="flow-step reveal">
+          <span class="flow-index">01</span>
+          <div>
+            <h3>Commit</h3>
+            <p>O código chega ao repositório e dispara o pipeline automaticamente.</p>
+          </div>
+        </li>
+        <li class="flow-step reveal">
+          <span class="flow-index">02</span>
+          <div>
+            <h3>Build</h3>
+            <p>A imagem é construída em camadas com cache distribuído entre os workers.</p>
+          </div>
+        </li>
+        <li class="flow-step reveal">
+          <span class="flow-index">03</span>
+          <div>
+            <h3>Deploy</h3>
+            <p>O Nimbus Core escolhe os nós ideais e realiza o rollout de forma gradual.</p>
+          </div>
+        </li>
+        <li class="flow-step reveal">
+          <span class="flow-index">04</span>
+          <div>
+            <h3>Escala</h3>
+            <p>O tráfego real ajusta réplicas e recursos, sem intervenção manual.</p>
+          </div>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- DEPLOY / TERMINAL CTA -->
+  <section class="deploy" id="deploy">
+    <div class="deploy-text reveal">
+      <h2>Sua primeira implantação leva menos de um minuto.</h2>
+      <p>Sem cartão de crédito. Sem configuração de rede. Só o seu container e um comando.</p>
+    </div>
+    <div class="terminal reveal">
+      <div class="terminal-bar">
+        <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+        <span class="terminal-title">zsh — nimbus</span>
+      </div>
+      <div class="terminal-body">
+        <p class="line"><span class="prompt">$</span> <span class="typed" id="typedLine"></span><span class="cursor-blink">▌</span></p>
+        <p class="out">↳ construindo imagem a partir do Dockerfile…</p>
+        <p class="out">↳ publicando no registro do Nimbus…</p>
+        <p class="out ok">✓ implantado em 3 regiões · 8.2s</p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <span class="nav-logo-mark"></span> Nimbus
+    </div>
+    <p class="footer-note">Projeto acadêmico de DevOps &amp; Computação em Nuvem — interface inspirada na estética de páginas de produto modernas.</p>
+  </div>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>

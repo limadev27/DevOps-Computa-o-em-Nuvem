@@ -1,2 +1,13 @@
 .env
 availability.yml
+.git
+.release.env
+.release.previous.env
+*.pem
+*.key
+*.tar.gz
+backups/
+__pycache__/
+.venv/
+.DS_Store
+Thumbs.db

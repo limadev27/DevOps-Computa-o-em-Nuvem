@@ -1,0 +1,56 @@
+name: Disponibilidade externa
+
+on:
+  schedule:
+    - cron: '7,22,37,52 * * * *'
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: disponibilidade-externa
+  cancel-in-progress: false
+
+jobs:
+  check:
+    if: vars.MONITOR_ENABLED == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Verificar HTTPS e conteúdo público
+        env:
+          SITE_DOMAIN: ${{ vars.SITE_DOMAIN }}
+          SITE_EXPECTED_TEXT: ${{ vars.SITE_EXPECTED_TEXT }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ ! "$SITE_DOMAIN" =~ ^([a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,63}$ ]] \
+            || [[ ${#SITE_DOMAIN} -gt 253 ]] \
+            || [[ -z "$SITE_EXPECTED_TEXT" ]] \
+            || [[ "$SITE_EXPECTED_TEXT" == *$'\n'* ]] \
+            || [[ "$SITE_EXPECTED_TEXT" == *$'\r'* ]]; then
+            echo '::error::Configure SITE_DOMAIN e SITE_EXPECTED_TEXT conforme o README.'
+            exit 1
+          fi
+
+          body=$(mktemp)
+          trap 'rm -f -- "$body"' EXIT
+
+          for attempt in 1 2 3; do
+            if status=$(curl --silent --show-error --fail \
+              --proto '=https' --connect-timeout 10 --max-time 20 \
+              --max-filesize 2097152 \
+              --output "$body" --write-out '%{http_code}' \
+              "https://$SITE_DOMAIN/") \
+              && [[ "$status" == '200' ]] \
+              && grep -Fq -- "$SITE_EXPECTED_TEXT" "$body"; then
+              echo 'Aplicação respondeu HTTP 200 com TLS válido e conteúdo esperado.'
+              exit 0
+            fi
+            echo "Tentativa $attempt sem confirmação de disponibilidade."
+            if [[ "$attempt" -lt 3 ]]; then sleep 10; fi
+          done
+
+          echo '::error::Falha no acesso HTTPS ou conteúdo inesperado. Investigar a aplicação.'
+          exit 1

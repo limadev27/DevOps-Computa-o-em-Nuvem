@@ -1,5 +1,4 @@
 .env
-availability.yml
 .git
 .release.env
 .release.previous.env

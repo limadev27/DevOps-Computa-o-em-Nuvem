@@ -28,3 +28,12 @@ jobs:
       run: |
         docker push \
         ghcr.io/limadev27/meu-site:latest
+    - name: Construir imagem do backend
+      run: |
+        docker build \
+        -t ghcr.io/limadev27/meu-site-backend:latest \
+        ./backend
+    - name: Publicar imagem do backend
+      run: |
+        docker push \
+        ghcr.io/limadev27/meu-site-backend:latest

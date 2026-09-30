@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Entrar — Nimbus</title>
+<link rel="icon" type="image/png" sizes="32x32" href="image/favicon-32.png">
+<link rel="apple-touch-icon" href="image/favicon-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="auth.css">
+</head>
+<body>
+<div class="cursor-glow" id="cursorGlow"></div>
+<nav class="nav scrolled" id="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo"><span class="nav-logo-mark"></span>Nimbus</a>
+    <ul class="nav-links">
+      <li><a href="index.html">Início</a></li>
+      <li><a href="planos.html">Planos</a></li>
+    </ul>
+    <div class="nav-actions">
+      <a href="cadastro.html" class="nav-cta">Criar conta</a>
+    </div>
+  </div>
+</nav>
+
+<main class="auth-shell">
+  <aside class="auth-aside" aria-hidden="true">
+    <div class="hero-grid"></div>
+    <div class="aside-orb"><div class="core-orb-ring ring-1"></div><div class="core-orb-ring ring-2"></div><div class="core-orb-core"></div></div>
+    <div class="aside-copy">
+      <h2>Seu cluster continua de onde parou.</h2>
+      <p>Entre para ver seu plano, seus deploys e tudo que o Nimbus Core orquestrou enquanto você esteve fora.</p>
+    </div>
+    <div class="terminal aside-term">
+      <div class="terminal-bar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="terminal-title">zsh — nimbus</span></div>
+      <div class="terminal-body">
+        <p><span class="prompt">$</span> nimbus status</p>
+        <p class="out ok" style="opacity:1;animation:none">✓ 3 regiões saudáveis</p>
+        <p class="out" style="opacity:1;animation:none">↳ 128 containers · 0 alertas</p>
+      </div>
+    </div>
+  </aside>
+
+  <section class="auth-main">
+    <div class="auth-card glass">
+      <div class="auth-badge"><span class="nav-logo-mark"></span></div>
+      <h1>Bem-vindo de volta</h1>
+      <p class="auth-sub">Entre para continuar com o seu plano.</p>
+
+      <form class="auth-form" id="loginForm">
+        <div class="field">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" required autocomplete="email" placeholder="voce@empresa.com">
+        </div>
+        <div class="field">
+          <label for="senha">Senha</label>
+          <div class="input-wrap">
+            <input type="password" id="senha" name="senha" required autocomplete="current-password" placeholder="Sua senha">
+            <button type="button" class="pw-toggle" aria-label="Mostrar senha"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button>
+          </div>
+        </div>
+        <button type="submit" class="auth-submit" id="submitBtn">Entrar</button>
+        <p class="auth-message" id="message"></p>
+      </form>
+
+      <p class="auth-switch">Ainda não tem conta? <a href="cadastro.html">Assine agora</a></p>
+    </div>
+  </section>
+</main>
+
+<script src="fx.js"></script>
+<script src="auth.js" data-mode="login"></script>
+</body>
+</html>

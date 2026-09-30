@@ -132,3 +132,82 @@ const terminalObserver = new IntersectionObserver((entries) => {
 }, { threshold: 0.5 });
 const terminalEl = document.querySelector('.terminal');
 if (terminalEl) terminalObserver.observe(terminalEl);
+
+// ============ captura de email (newsletter) ============
+const newsletterForm = document.getElementById('newsletterForm');
+if (newsletterForm) {
+  newsletterForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const email = document.getElementById('newsletterEmail').value.trim();
+    const msg = document.getElementById('newsletterMsg');
+
+    try {
+      const resposta = await fetch('/api/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ email }),
+      });
+      const texto = await resposta.text();
+      let dados = {};
+      try { dados = texto ? JSON.parse(texto) : {}; } catch (e) {}
+      if (!resposta.ok) throw new Error(dados.erro || `Servidor indisponível (erro ${resposta.status}).`);
+      msg.textContent = 'Email cadastrado! Obrigado.';
+      msg.className = 'auth-message success';
+      newsletterForm.reset();
+    } catch (erro) {
+      msg.textContent = erro.message;
+      msg.className = 'auth-message error';
+    }
+  });
+}
+
+// ============ "Já é cliente?" — login direto na página inicial ============
+const clientForm = document.getElementById('clientLoginForm');
+const clientCard = document.getElementById('clientCard');
+if (clientForm) {
+  const clientMsg = document.getElementById('clientMsg');
+  const clientSubmit = document.getElementById('clientSubmit');
+
+  clientForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    clientMsg.textContent = '';
+    clientMsg.className = 'auth-message';
+    clientSubmit.disabled = true;
+    clientSubmit.textContent = 'Entrando…';
+    try {
+      const resposta = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          email: document.getElementById('clientEmail').value.trim(),
+          senha: document.getElementById('clientSenha').value,
+        }),
+      });
+      const texto = await resposta.text();
+      let dados = {};
+      try { dados = texto ? JSON.parse(texto) : {}; } catch (e) {}
+      if (!resposta.ok) throw new Error(dados.erro || `Servidor indisponível (erro ${resposta.status}).`);
+      window.location.href = 'planos.html';
+    } catch (erro) {
+      clientMsg.textContent = erro.message;
+      clientMsg.classList.add('error');
+      clientSubmit.disabled = false;
+      clientSubmit.textContent = 'Entrar';
+    }
+  });
+
+  // Se a pessoa já está logada, troca o formulário por um atalho.
+  fetch('/api/me', { credentials: 'include' })
+    .then((r) => (r.ok ? r.json() : null))
+    .then((u) => {
+      if (!u) return;
+      clientCard.innerHTML = `
+        <h3 style="font-size:20px;font-weight:700;text-align:center">Olá de novo!</h3>
+        <p class="auth-sub" style="margin-top:8px;text-align:center;color:var(--text-muted);font-size:14px"></p>
+        <a href="planos.html" class="auth-submit" style="display:block;margin-top:24px;text-align:center;text-decoration:none">Ir para os planos</a>`;
+      clientCard.querySelector('.auth-sub').textContent = `Você está logado como ${u.email}.`;
+    })
+    .catch(() => {});
+}

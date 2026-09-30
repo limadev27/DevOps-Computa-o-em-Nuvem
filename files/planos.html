@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Planos — Nimbus</title>
+<link rel="icon" type="image/png" sizes="32x32" href="image/favicon-32.png">
+<link rel="apple-touch-icon" href="image/favicon-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="auth.css">
+</head>
+<body>
+<div class="cursor-glow" id="cursorGlow"></div>
+<nav class="nav scrolled" id="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo"><span class="nav-logo-mark"></span>Nimbus</a>
+    <ul class="nav-links">
+      <li><a href="index.html">Início</a></li>
+      <li><a href="planos.html">Planos</a></li>
+    </ul>
+    <div class="nav-actions">
+      <a class="logout-btn" id="loginLink" href="login.html" hidden>Entrar</a>
+      <button class="logout-btn" id="logoutBtn" hidden>Sair</button>
+    </div>
+  </div>
+</nav>
+
+<main class="plans-page">
+  <div class="hero-grid" aria-hidden="true"></div>
+  <header class="plans-header">
+    <h1>Escolha o plano que <span class="hero-title-accent">cabe no seu time.</span></h1>
+    <p id="welcomeMsg">Compare os planos e escolha o ideal para o seu time.</p>
+  </header>
+
+  <p class="auth-message" id="planMsg" style="text-align:center"></p>
+
+  <div class="plans-grid" id="plansGrid">
+    <div class="plan-skeleton"></div><div class="plan-skeleton"></div><div class="plan-skeleton"></div>
+  </div>
+
+  <ul class="plans-trust">
+    <li><span>99.99%</span>de disponibilidade</li>
+    <li><span>8s</span>tempo médio de deploy</li>
+    <li><span>40+</span>regiões disponíveis</li>
+  </ul>
+
+  <section class="faq">
+    <h2>Perguntas frequentes</h2>
+    <details><summary>Preciso de cartão de crédito para começar?</summary><p>Não. O plano Starter é gratuito e você só cria a conta na hora de escolher um plano.</p></details>
+    <details><summary>Posso trocar de plano depois?</summary><p>Sim. Volte a esta página, escolha outro plano e a mudança vale na hora.</p></details>
+    <details><summary>O que muda no plano Enterprise?</summary><p>Containers ilimitados, todas as regiões, zero-trust dedicado e um gerente de conta para o seu time.</p></details>
+  </section>
+</main>
+
+<script src="fx.js"></script>
+<script src="planos.js"></script>
+</body>
+</html>

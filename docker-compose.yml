@@ -1,7 +1,22 @@
 services:
-  portfolio:
+  web:
     build: .
-    container_name: meu-portifolio
+    container_name: nimbus-web
     ports:
       - "8080:80"
-    restart: unless-stopped    
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  backend:
+    build: ./backend
+    container_name: nimbus-backend
+    environment:
+      - JWT_SECRET=${JWT_SECRET:?Defina JWT_SECRET no arquivo .env}
+      - PORT=3000
+    volumes:
+      - nimbus-data:/app/data
+    restart: unless-stopped
+
+volumes:
+  nimbus-data:

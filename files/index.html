@@ -9,6 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="auth.css">
 <link rel="icon" type="image/png" sizes="32x32" href="image/favicon-32.png">
 <link rel="apple-touch-icon" href="image/favicon-180.png">
 </head>
@@ -23,13 +24,14 @@
       Nimbus
     </a>
     <ul class="nav-links">
+      <li><a href="#cliente">Já sou cliente</a></li>
       <li><a href="#core">O motor</a></li>
       <li><a href="#numeros">Números</a></li>
       <li><a href="#recursos">Recursos</a></li>
       <li><a href="#fluxo">Fluxo</a></li>
       <li><a href="#integrantes">Integrantes</a></li>
     </ul>
-    <a href="#deploy" class="nav-cta">Começar</a>
+    <a href="planos.html" class="nav-cta">Ver planos</a>
   </div>
 </nav>
 
@@ -55,6 +57,28 @@
     </div>
     <div class="scroll-hint" aria-hidden="true">
       <span></span>
+    </div>
+  </section>
+
+  <!-- JÁ É CLIENTE? -->
+  <section class="client-section" id="cliente">
+    <div class="client-text reveal">
+      <h2>Já é cliente?</h2>
+      <p>Entre na sua conta para acessar o seu plano. Ainda não assinou? <a href="planos.html">Veja os planos</a> &mdash; você só cria a conta na hora de escolher um.</p>
+    </div>
+    <div class="auth-card client-card reveal" id="clientCard">
+      <form class="auth-form" id="clientLoginForm">
+        <div class="field">
+          <label for="clientEmail">Email</label>
+          <input type="email" id="clientEmail" required autocomplete="email">
+        </div>
+        <div class="field">
+          <label for="clientSenha">Senha</label>
+          <input type="password" id="clientSenha" required autocomplete="current-password">
+        </div>
+        <button type="submit" class="auth-submit" id="clientSubmit">Entrar</button>
+        <p class="auth-message" id="clientMsg"></p>
+      </form>
     </div>
   </section>
 
@@ -201,6 +225,17 @@
         <p class="out ok">✓ implantado em 3 regiões · 8.2s</p>
       </div>
     </div>
+  </section>
+
+  <!-- NEWSLETTER / CAPTURA DE EMAIL -->
+  <section class="newsletter" id="newsletter">
+    <h2>Fique por dentro</h2>
+    <p>Deixe seu email e avisamos sobre novidades da plataforma.</p>
+    <form class="newsletter-form" id="newsletterForm">
+      <input type="email" id="newsletterEmail" placeholder="seu@email.com" required>
+      <button type="submit">Enviar</button>
+    </form>
+    <p class="auth-message" id="newsletterMsg"></p>
   </section>
 
 </main>

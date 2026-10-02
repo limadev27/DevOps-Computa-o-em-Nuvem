@@ -172,3 +172,18 @@ app.post('/api/subscribe', (req, res) => {
 app.listen(PORTA, () => {
   console.log(`Backend do Nimbus rodando na porta ${PORTA}`);
 });
+
+app.get('/api/metrics', (req, res) => {
+  const range = req.query.range; // "1h", "6h" ou "24h"
+  // Troque isto pela consulta real que fizer sentido pro seu projeto
+  // (ex.: contar usuários/assinantes por hora no banco).
+  // O formato de resposta tem que ser exatamente este:
+  res.json({
+    times: ['10:00', '10:30', '11:00'],
+    vals: {
+      prod: [60, 65, 70],
+      stag: [40, 38, 42],
+      dev:  [20, 22, 19],
+    },
+  });
+});

@@ -60,6 +60,392 @@
     </div>
   </section>
 
+<!-- ==================================================================
+     GRÁFICO INTERATIVO (mouse/toque) — bloco único, sem bibliotecas.
+     ================================================================== -->
+<section class="nb-chart-section" id="nbChartSection">
+  <style>
+    .nb-chart-section{max-width:1000px;margin:0 auto;padding:96px 24px;position:relative;z-index:2;color:var(--text,#f5f5f7);font-family:var(--font-display,'Inter',-apple-system,sans-serif)}
+    .nb-chart-intro{text-align:center;margin-bottom:36px}
+    .nb-chart-intro h2{font-size:clamp(28px,4vw,44px);font-weight:800;letter-spacing:-.03em;line-height:1.1}
+    .nb-chart-intro h2 span{background:var(--gradient,linear-gradient(135deg,#0a84ff,#5e5cea));-webkit-background-clip:text;background-clip:text;color:transparent}
+    .nb-chart-intro p{margin-top:14px;color:var(--text-muted,#86868b)}
+
+    .nb-chart-card{padding:28px;border-radius:24px;border:1px solid transparent;
+      background:linear-gradient(var(--surface,#0d0d0f),var(--surface,#0d0d0f)) padding-box,
+                 linear-gradient(135deg,rgba(10,132,255,.5),rgba(94,92,234,.12) 45%,var(--line,#1e1e21) 75%) border-box;
+      box-shadow:0 30px 80px rgba(0,0,0,.45)}
+    .nb-chart-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
+    .nb-chart-head h3{font-size:18px;font-weight:700;letter-spacing:-.01em}
+    .nb-chart-head p{margin-top:4px;font-size:13px;color:var(--text-muted,#86868b)}
+
+    .nb-ranges{display:inline-flex;padding:3px;border:1px solid var(--line,#1e1e21);border-radius:980px;background:var(--surface-2,#131316)}
+    .nb-ranges button{border:0;background:transparent;color:var(--text-muted,#86868b);font:600 13px var(--font-display,inherit);padding:6px 14px;border-radius:980px;cursor:pointer;transition:background .2s,color .2s}
+    .nb-ranges button:hover{color:var(--text,#f5f5f7)}
+    .nb-ranges button.active{background:var(--text,#f5f5f7);color:#000}
+
+    .nb-legend{display:flex;flex-wrap:wrap;gap:10px;margin:22px 0 10px}
+    .nb-leg{display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:980px;border:1px solid var(--line,#1e1e21);background:var(--surface-2,#131316);color:var(--text,#f5f5f7);font:500 13px var(--font-display,inherit);cursor:pointer;transition:border-color .2s,opacity .2s,transform .2s}
+    .nb-leg:hover{border-color:#3a3a3e;transform:translateY(-1px)}
+    .nb-leg i{width:9px;height:9px;border-radius:50%;display:inline-block}
+    .nb-leg em{font:600 12px var(--font-mono,ui-monospace,monospace);font-style:normal;color:var(--text-muted,#86868b);min-width:44px;text-align:right}
+    .nb-leg.off{opacity:.4}
+    .nb-leg.off span{text-decoration:line-through}
+
+    .nb-plot{position:relative;height:320px;cursor:crosshair;touch-action:pan-y;user-select:none}
+    .nb-svg{display:block;width:100%;height:100%;overflow:visible}
+    .nb-grid{stroke:rgba(255,255,255,.06);stroke-width:1}
+    .nb-axis{fill:#86868b;font-size:11px;font-family:var(--font-mono,ui-monospace,monospace)}
+    .nb-line{fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+    .nb-s{transition:opacity .2s}
+    .nb-plot.nb-focus .nb-s{opacity:.15}
+    .nb-plot.nb-focus .nb-s.on{opacity:1}
+    .nb-vline{stroke:rgba(255,255,255,.28);stroke-dasharray:4 4}
+    .nb-dot{stroke:#0d0d0f;stroke-width:2}
+
+    .nb-tip{position:absolute;z-index:3;min-width:170px;padding:12px 14px;border-radius:12px;background:rgba(19,19,22,.92);
+      -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border:1px solid #2a2a2e;font-size:13px;pointer-events:none;opacity:0;transition:opacity .15s}
+    .nb-tip-time{font:500 11px var(--font-mono,ui-monospace,monospace);color:var(--text-muted,#86868b);margin-bottom:8px}
+    .nb-tip-row{display:flex;justify-content:space-between;gap:18px;align-items:center;padding:2px 0}
+    .nb-tip-row span{display:flex;align-items:center;gap:8px}
+    .nb-tip-row i{width:8px;height:8px;border-radius:50%;display:inline-block}
+    .nb-tip-row b{font:600 13px var(--font-mono,ui-monospace,monospace)}
+    .nb-hint{margin-top:14px;font-size:12px;color:var(--text-muted,#86868b);text-align:center}
+    @media (max-width:600px){.nb-chart-card{padding:20px}.nb-plot{height:260px}}
+  </style>
+
+  <div class="nb-chart-intro">
+    <h2>Seu cluster, <span>ao vivo.</span></h2>
+    <p>Acompanhe o uso de CPU de cada ambiente e veja o que a orquestração está fazendo.</p>
+  </div>
+
+  <div class="nb-chart-card">
+    <div class="nb-chart-head">
+      <div>
+        <h3>Uso de CPU por cluster</h3>
+        <p>Passe o mouse sobre o gráfico para ver os valores de cada momento.</p>
+      </div>
+      <div class="nb-ranges" role="group" aria-label="Período">
+        <button type="button" data-range="1h" class="active">1h</button>
+        <button type="button" data-range="6h">6h</button>
+        <button type="button" data-range="24h">24h</button>
+      </div>
+    </div>
+    <div class="nb-legend"></div>
+    <div class="nb-plot">
+      <svg class="nb-svg" role="img" aria-label="Gráfico de linhas do uso de CPU por cluster"></svg>
+      <div class="nb-tip"></div>
+    </div>
+    <p class="nb-hint">Clique na legenda para ocultar uma série. Dados de demonstração gerados no navegador.</p>
+  </div>
+
+  <script>
+  (function () {
+    var root = document.getElementById('nbChartSection');
+    if (!root) return;
+    var plot = root.querySelector('.nb-plot');
+    var svg = root.querySelector('.nb-svg');
+    var tip = root.querySelector('.nb-tip');
+    var legend = root.querySelector('.nb-legend');
+    var rangeBtns = root.querySelectorAll('.nb-ranges button');
+    var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // ---- DADOS ------------------------------------------------------
+    // Para usar dados reais, troque dataFor() por um fetch à sua API e
+    // devolva { times: ['10:00', ...], vals: { prod: [..], stag: [..], dev: [..] } }.
+    var SERIES = [
+      { id: 'prod', nome: 'Produção',        cor: '#0a84ff', base: 62, amp: 18 },
+      { id: 'stag', nome: 'Staging',         cor: '#5e5cea', base: 38, amp: 14 },
+      { id: 'dev',  nome: 'Desenvolvimento', cor: '#32d74b', base: 22, amp: 10 }
+    ];
+    var RANGES = { '1h': { n: 31, stepMin: 2 }, '6h': { n: 37, stepMin: 10 }, '24h': { n: 49, stepMin: 30 } };
+
+    function mulberry32(a) {
+      return function () {
+        var t = a += 0x6D2B79F5;
+        t = Math.imul(t ^ t >>> 15, t | 1);
+        t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+        return ((t ^ t >>> 14) >>> 0) / 4294967296;
+      };
+    }
+    function pad(n) { return (n < 10 ? '0' : '') + n; }
+
+    var cache = {};
+    function dataFor(key) {
+      if (cache[key]) return cache[key];
+      var cfg = RANGES[key];
+      var r = mulberry32(key.length * 977 + key.charCodeAt(0));
+      var out = { times: [], vals: {} };
+      var now = Date.now();
+      for (var i = 0; i < cfg.n; i++) {
+        var t = new Date(now - (cfg.n - 1 - i) * cfg.stepMin * 60000);
+        out.times.push(pad(t.getHours()) + ':' + pad(t.getMinutes()));
+      }
+      SERIES.forEach(function (s, si) {
+        var arr = [], v = s.base;
+        for (var i = 0; i < cfg.n; i++) {
+          var wave = Math.sin(i / cfg.n * Math.PI * 2 * (1 + si * 0.6) + si) * s.amp * 0.6;
+          v += (r() - 0.5) * s.amp * 0.55;
+          v += (s.base + wave - v) * 0.18;
+          arr.push(Math.max(4, Math.min(97, v)));
+        }
+        out.vals[s.id] = arr;
+      });
+      cache[key] = out;
+      return out;
+    }
+
+    // ---- DADOS REAIS (opcional) --------------------------------------
+// Enquanto a resposta não chega, o gráfico já mostra os dados
+// simulados de dataFor() — nunca fica vazio. Quando a API responde,
+// o cache é substituído e o gráfico se redesenha com os dados reais.
+    var carregando = {};
+    function carregarDados(key) {
+      if (carregando[key]) return; // evita pedir duas vezes ao mesmo tempo
+      carregando[key] = true;
+
+      fetch('/api/metrics?range=' + encodeURIComponent(key))
+        .then(function (resposta) {
+          if (!resposta.ok) throw new Error('Erro ' + resposta.status);
+          return resposta.json();
+        })
+        .then(function (dados) {
+          // "dados" precisa vir no formato:
+          // { times: ['10:00', ...], vals: { prod: [...], stag: [...], dev: [...] } }
+          cache[key] = dados;
+          if (state.range === key) {
+            render(true);
+            updateLegend(null);
+          }
+        })
+        .catch(function (erro) {
+          console.warn('Não deu pra carregar dados reais, mantendo os simulados:', erro);
+        })
+        .finally(function () {
+          carregando[key] = false;
+        });
+    }
+
+    // ---- ESTADO -----------------------------------------------------
+    var state = { range: '1h', hidden: {} };
+    var geo = null;
+    var rendered = false;
+
+    // Curva suave (Catmull-Rom convertida em Bézier)
+    function curve(p) {
+      var d = 'M' + p[0][0].toFixed(1) + ',' + p[0][1].toFixed(1);
+      for (var i = 0; i < p.length - 1; i++) {
+        var p0 = p[i - 1] || p[i], p1 = p[i], p2 = p[i + 1], p3 = p[i + 2] || p2;
+        d += ' C' + (p1[0] + (p2[0] - p0[0]) / 6).toFixed(1) + ',' + (p1[1] + (p2[1] - p0[1]) / 6).toFixed(1) +
+             ' ' + (p2[0] - (p3[0] - p1[0]) / 6).toFixed(1) + ',' + (p2[1] - (p3[1] - p1[1]) / 6).toFixed(1) +
+             ' ' + p2[0].toFixed(1) + ',' + p2[1].toFixed(1);
+      }
+      return d;
+    }
+
+    // ---- DESENHO ----------------------------------------------------
+    function render(animate) {
+      var d = dataFor(state.range);
+      var n = d.times.length;
+      var W = Math.max(280, plot.clientWidth);
+      var H = plot.clientHeight || 320;
+      var m = { t: 14, r: 14, b: 28, l: 42 };
+      var iw = W - m.l - m.r, ih = H - m.t - m.b;
+      function X(i) { return m.l + i / (n - 1) * iw; }
+      function Y(v) { return m.t + (1 - v / 100) * ih; }
+      geo = { W: W, H: H, m: m, iw: iw, n: n, X: X, Y: Y };
+
+      var h = '<defs>';
+      SERIES.forEach(function (s) {
+        h += '<linearGradient id="nbg-' + s.id + '" x1="0" y1="0" x2="0" y2="1">' +
+             '<stop offset="0" stop-color="' + s.cor + '" stop-opacity=".28"/>' +
+             '<stop offset="1" stop-color="' + s.cor + '" stop-opacity="0"/></linearGradient>';
+      });
+      h += '</defs>';
+
+      [0, 25, 50, 75, 100].forEach(function (v) {
+        var y = Y(v).toFixed(1);
+        h += '<line class="nb-grid" x1="' + m.l + '" x2="' + (W - m.r) + '" y1="' + y + '" y2="' + y + '"/>' +
+             '<text class="nb-axis" x="' + (m.l - 8) + '" y="' + (+y + 4) + '" text-anchor="end">' + v + '%</text>';
+      });
+
+      var ticks = 5;
+      for (var k = 0; k < ticks; k++) {
+        var ti = Math.round(k * (n - 1) / (ticks - 1));
+        var anchor = k === 0 ? 'start' : (k === ticks - 1 ? 'end' : 'middle');
+        h += '<text class="nb-axis" x="' + X(ti).toFixed(1) + '" y="' + (H - 8) + '" text-anchor="' + anchor + '">' + d.times[ti] + '</text>';
+      }
+
+      SERIES.forEach(function (s) {
+        if (state.hidden[s.id]) return;
+        var pts = d.vals[s.id].map(function (v, i) { return [X(i), Y(v)]; });
+        var line = curve(pts);
+        var area = line + ' L' + X(n - 1).toFixed(1) + ',' + Y(0).toFixed(1) + ' L' + X(0).toFixed(1) + ',' + Y(0).toFixed(1) + ' Z';
+        h += '<g class="nb-s" data-id="' + s.id + '"><path class="nb-area" d="' + area + '" fill="url(#nbg-' + s.id + ')"/>' +
+             '<path class="nb-line" d="' + line + '" stroke="' + s.cor + '"/></g>';
+      });
+
+      h += '<g class="nb-hover" style="display:none"><line class="nb-vline" y1="' + m.t + '" y2="' + (m.t + ih) + '"/>';
+      SERIES.forEach(function (s) {
+        h += '<circle class="nb-dot" r="5" data-id="' + s.id + '" fill="' + s.cor + '" style="display:none"/>';
+      });
+      h += '</g>';
+
+      svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+      svg.setAttribute('width', W);
+      svg.setAttribute('height', H);
+      svg.innerHTML = h;
+      rendered = true;
+
+      if (animate && !reduced) {
+        var lines = svg.querySelectorAll('.nb-line');
+        var areas = svg.querySelectorAll('.nb-area');
+        for (var a = 0; a < areas.length; a++) { areas[a].style.opacity = 0; }
+        for (var l = 0; l < lines.length; l++) {
+          var len = lines[l].getTotalLength();
+          lines[l].style.strokeDasharray = len;
+          lines[l].style.strokeDashoffset = len;
+        }
+        svg.getBoundingClientRect();
+        for (var l2 = 0; l2 < lines.length; l2++) {
+          lines[l2].style.transition = 'stroke-dashoffset 1.1s cubic-bezier(.16,.8,.24,1)';
+          lines[l2].style.strokeDashoffset = 0;
+        }
+        for (var a2 = 0; a2 < areas.length; a2++) {
+          areas[a2].style.transition = 'opacity 1.1s ease .2s';
+          areas[a2].style.opacity = 1;
+        }
+        setTimeout(function () {
+          var ls = svg.querySelectorAll('.nb-line');
+          for (var q = 0; q < ls.length; q++) { ls[q].style.strokeDasharray = 'none'; }
+        }, 1300);
+      }
+    }
+
+    // ---- LEGENDA ----------------------------------------------------
+    function updateLegend(idx) {
+      var d = dataFor(state.range);
+      var items = legend.querySelectorAll('.nb-leg');
+      for (var i = 0; i < items.length; i++) {
+        var id = items[i].getAttribute('data-id');
+        var arr = d.vals[id];
+        var at = idx == null ? arr.length - 1 : idx;
+        items[i].querySelector('em').textContent = arr[at].toFixed(1) + '%';
+        items[i].classList.toggle('off', !!state.hidden[id]);
+      }
+    }
+
+    function setFocus(id) {
+      plot.classList.toggle('nb-focus', !!id);
+      var gs = svg.querySelectorAll('.nb-s');
+      for (var i = 0; i < gs.length; i++) { gs[i].classList.toggle('on', gs[i].getAttribute('data-id') === id); }
+    }
+
+    function buildLegend() {
+      SERIES.forEach(function (s) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'nb-leg';
+        b.setAttribute('data-id', s.id);
+        b.innerHTML = '<i style="background:' + s.cor + '"></i><span>' + s.nome + '</span><em></em>';
+        b.addEventListener('mouseenter', function () { if (!state.hidden[s.id]) setFocus(s.id); });
+        b.addEventListener('mouseleave', function () { setFocus(null); });
+        b.addEventListener('click', function () {
+          var visiveis = SERIES.filter(function (x) { return !state.hidden[x.id]; }).length;
+          if (!state.hidden[s.id] && visiveis === 1) return; // mantém ao menos uma série
+          state.hidden[s.id] = !state.hidden[s.id];
+          setFocus(null);
+          render(false);
+          updateLegend(null);
+        });
+        legend.appendChild(b);
+      });
+    }
+
+    // ---- INTERAÇÃO COM O MOUSE -------------------------------------
+    function showAt(i, my) {
+      var d = dataFor(state.range);
+      var x = geo.X(i);
+      var g = svg.querySelector('.nb-hover');
+      if (!g) return;
+      g.style.display = '';
+      var v = g.querySelector('.nb-vline');
+      v.setAttribute('x1', x); v.setAttribute('x2', x);
+      var rows = '';
+      SERIES.forEach(function (s) {
+        var c = g.querySelector('.nb-dot[data-id="' + s.id + '"]');
+        if (state.hidden[s.id]) { c.style.display = 'none'; return; }
+        var val = d.vals[s.id][i];
+        c.style.display = '';
+        c.setAttribute('cx', x);
+        c.setAttribute('cy', geo.Y(val));
+        rows += '<div class="nb-tip-row"><span><i style="background:' + s.cor + '"></i>' + s.nome + '</span><b>' + val.toFixed(1) + '%</b></div>';
+      });
+      tip.innerHTML = '<div class="nb-tip-time">' + d.times[i] + '</div>' + rows;
+      tip.style.opacity = 1;
+      var tw = tip.offsetWidth, th = tip.offsetHeight;
+      var left = x + 16;
+      if (left + tw > geo.W - 4) left = x - 16 - tw;
+      var top = Math.max(4, Math.min(my - th / 2, geo.H - th - 4));
+      tip.style.left = left + 'px';
+      tip.style.top = top + 'px';
+      updateLegend(i);
+    }
+
+    function hideHover() {
+      var g = svg.querySelector('.nb-hover');
+      if (g) g.style.display = 'none';
+      tip.style.opacity = 0;
+      updateLegend(null);
+    }
+
+    plot.addEventListener('pointermove', function (e) {
+      if (!geo) return;
+      var rect = plot.getBoundingClientRect();
+      var mx = e.clientX - rect.left, my = e.clientY - rect.top;
+      var i = Math.round((mx - geo.m.l) / geo.iw * (geo.n - 1));
+      i = Math.max(0, Math.min(geo.n - 1, i));
+      showAt(i, my);
+    });
+    plot.addEventListener('pointerleave', hideHover);
+
+    Array.prototype.forEach.call(rangeBtns, function (btn) {
+      btn.addEventListener('click', function () {
+        state.range = btn.getAttribute('data-range');
+        Array.prototype.forEach.call(rangeBtns, function (b) { b.classList.toggle('active', b === btn); });
+        render(true);
+        updateLegend(null);
+        carregarDados(state.range);
+      });
+    });
+
+    // ---- INÍCIO -----------------------------------------------------
+    buildLegend();
+    updateLegend(null);
+
+    function start() { if (!rendered) { render(true); updateLegend(null); carregarDados(state.range);} }
+    if ('IntersectionObserver' in window) {
+      var io = new IntersectionObserver(function (entries) {
+        if (entries[0].isIntersecting) { start(); io.disconnect(); }
+      }, { threshold: 0.25 });
+      io.observe(plot);
+    } else {
+      start();
+    }
+
+    // Redesenha quando a largura muda (girar o celular, redimensionar a janela)
+    var lastW = 0;
+    function onResize() {
+      if (!rendered) return;
+      var w = plot.clientWidth;
+      if (w !== lastW) { lastW = w; render(false); updateLegend(null); }
+    }
+    if ('ResizeObserver' in window) { new ResizeObserver(onResize).observe(plot); }
+    else { window.addEventListener('resize', onResize); }
+  })();
+  </script>
+</section>
+
   <!-- JÁ É CLIENTE? -->
   <section class="client-section" id="cliente">
     <div class="client-text reveal">

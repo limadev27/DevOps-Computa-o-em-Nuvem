@@ -269,12 +269,22 @@
              '<text class="nb-axis" x="' + (m.l - 8) + '" y="' + (+y + 4) + '" text-anchor="end">' + v + '%</text>';
       });
 
-      var ticks = 5;
+      // Rótulos do eixo X: a quantidade depende da largura disponível e de
+      // quantos pontos existem (a API pode devolver poucos). Índices únicos,
+      // então nunca há dois rótulos no mesmo lugar.
+      var maxLen = 0;
+      for (var q0 = 0; q0 < n; q0++) { maxLen = Math.max(maxLen, String(d.times[q0]).length); }
+      var labelW = maxLen * 7 + 28;                       // largura aprox. do texto + folga
+      var ticks = Math.max(2, Math.min(n, Math.floor(iw / labelW) + 1));
+      var seen = {}, tickIdx = [];
       for (var k = 0; k < ticks; k++) {
-        var ti = Math.round(k * (n - 1) / (ticks - 1));
-        var anchor = k === 0 ? 'start' : (k === ticks - 1 ? 'end' : 'middle');
-        h += '<text class="nb-axis" x="' + X(ti).toFixed(1) + '" y="' + (H - 8) + '" text-anchor="' + anchor + '">' + d.times[ti] + '</text>';
+        var ti = ticks === 1 ? 0 : Math.round(k * (n - 1) / (ticks - 1));
+        if (!seen[ti]) { seen[ti] = true; tickIdx.push(ti); }
       }
+      tickIdx.forEach(function (ti, k) {
+        var anchor = k === 0 ? 'start' : (k === tickIdx.length - 1 ? 'end' : 'middle');
+        h += '<text class="nb-axis" x="' + X(ti).toFixed(1) + '" y="' + (H - 8) + '" text-anchor="' + anchor + '">' + d.times[ti] + '</text>';
+      });
 
       SERIES.forEach(function (s) {
         if (state.hidden[s.id]) return;

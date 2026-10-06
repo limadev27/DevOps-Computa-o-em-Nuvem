@@ -175,11 +175,12 @@
       if (cache[key]) return cache[key];
       var cfg = RANGES[key];
       var r = mulberry32(key.length * 977 + key.charCodeAt(0));
-      var out = { times: [], vals: {} };
+      var out = { times: [], ts: [], vals: {} };
       var now = Date.now();
       for (var i = 0; i < cfg.n; i++) {
         var t = new Date(now - (cfg.n - 1 - i) * cfg.stepMin * 60000);
         out.times.push(pad(t.getHours()) + ':' + pad(t.getMinutes()));
+        out.ts.push(t.getTime());
       }
       SERIES.forEach(function (s, si) {
         var arr = [], v = s.base;
@@ -277,21 +278,43 @@
              '<text class="nb-axis" x="' + (m.l - 8) + '" y="' + (+y + 4) + '" text-anchor="end">' + v + '%</text>';
       });
 
-      // Rótulos do eixo X: a quantidade depende da largura disponível e de
-      // quantos pontos existem (a API pode devolver poucos). Índices únicos,
-      // então nunca há dois rótulos no mesmo lugar.
+      // Rótulos do eixo X. A linha continua com um ponto a cada poucos minutos,
+      // mas os rótulos ficam em horários "redondos" (ex.: 12:30, 13:00) e são
+      // posicionados pelo horário real. 1h: de 30 em 30 min · 6h: de hora em
+      // hora · 24h: de 3 em 3 h. Se não couber na largura, o passo aumenta.
       var maxLen = 0;
       for (var q0 = 0; q0 < n; q0++) { maxLen = Math.max(maxLen, String(d.times[q0]).length); }
       var labelW = maxLen * 7 + 28;                       // largura aprox. do texto + folga
-      var ticks = Math.max(2, Math.min(n, Math.floor(iw / labelW) + 1));
-      var seen = {}, tickIdx = [];
-      for (var k = 0; k < ticks; k++) {
-        var ti = ticks === 1 ? 0 : Math.round(k * (n - 1) / (ticks - 1));
-        if (!seen[ti]) { seen[ti] = true; tickIdx.push(ti); }
+      var labels = [];                                    // [{ x, text }]
+
+      if (d.ts && d.ts.length === n && n > 1) {
+        var NICE = [30, 60, 120, 180, 240, 360, 720];     // passos possíveis, em minutos
+        var PREF = { '1h': 30, '6h': 60, '24h': 180 };
+        var t0 = d.ts[0], t1 = d.ts[n - 1], span = t1 - t0;
+        var off = new Date(t0).getTimezoneOffset() * 60000;   // alinha ao fuso do visitante
+        var si0 = NICE.indexOf(PREF[state.range]);
+        var tickTs = [];
+        for (var si = si0 < 0 ? 0 : si0; si < NICE.length; si++) {
+          var sMs = NICE[si] * 60000;
+          tickTs = [];
+          for (var tt = Math.ceil((t0 - off) / sMs) * sMs + off; tt <= t1 + 1; tt += sMs) { tickTs.push(tt); }
+          if (tickTs.length < 2 || iw * sMs / span >= labelW) break;
+        }
+        tickTs.forEach(function (tt) {
+          var dt = new Date(tt);
+          labels.push({ x: m.l + (tt - t0) / span * iw, text: pad(dt.getHours()) + ':' + pad(dt.getMinutes()) });
+        });
+      } else {
+        // API sem "ts": usa pontos espaçados por índice, sem repetir
+        var ticks = Math.max(2, Math.min(n, Math.floor(iw / labelW) + 1));
+        var seen = {};
+        for (var k = 0; k < ticks; k++) {
+          var ti = Math.round(k * (n - 1) / (ticks - 1));
+          if (!seen[ti]) { seen[ti] = true; labels.push({ x: X(ti), text: d.times[ti] }); }
+        }
       }
-      tickIdx.forEach(function (ti, k) {
-        var anchor = k === 0 ? 'start' : (k === tickIdx.length - 1 ? 'end' : 'middle');
-        h += '<text class="nb-axis" x="' + X(ti).toFixed(1) + '" y="' + (H - 8) + '" text-anchor="' + anchor + '">' + d.times[ti] + '</text>';
+      labels.forEach(function (lb) {
+        h += '<text class="nb-axis" x="' + lb.x.toFixed(1) + '" y="' + (H - 8) + '" text-anchor="middle">' + lb.text + '</text>';
       });
 
       SERIES.forEach(function (s) {

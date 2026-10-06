@@ -171,6 +171,20 @@
     function pad(n) { return (n < 10 ? '0' : '') + n; }
 
     var cache = {};
+
+    // Recalcula os horários a partir do relógio de agora: o último ponto é
+    // sempre "agora" e os anteriores voltam de stepMin em stepMin. Os valores
+    // (a curva) não mudam, só os horários. Dados reais da API trazem o seu.
+    function refreshTimes(d, key) {
+      if (d.real) return;
+      var cfg = RANGES[key], now = Date.now();
+      for (var i = 0; i < d.times.length; i++) {
+        var t = new Date(now - (d.times.length - 1 - i) * cfg.stepMin * 60000);
+        d.ts[i] = t.getTime();
+        d.times[i] = pad(t.getHours()) + ':' + pad(t.getMinutes());
+      }
+    }
+
     function dataFor(key) {
       if (cache[key]) return cache[key];
       var cfg = RANGES[key];
@@ -221,6 +235,7 @@
               return pad(dt.getHours()) + ':' + pad(dt.getMinutes());
             });
           }
+          dados.real = true;
           cache[key] = dados;
           if (state.range === key) {
             render(true);
@@ -255,6 +270,7 @@
     // ---- DESENHO ----------------------------------------------------
     function render(animate) {
       var d = dataFor(state.range);
+      refreshTimes(d, state.range);
       var n = d.times.length;
       var W = Math.max(280, plot.clientWidth);
       var H = plot.clientHeight || 320;
@@ -287,7 +303,15 @@
       var labelW = maxLen * 7 + 28;                       // largura aprox. do texto + folga
       var labels = [];                                    // [{ x, text }]
 
-      if (d.ts && d.ts.length === n && n > 1) {
+      if (state.range === '1h' && n > 2) {
+        // 1h: três rótulos fixos — início, meio e fim (o fim é "agora").
+        var mid = Math.round((n - 1) / 2);
+        labels = [
+          { x: m.l,       text: d.times[0],       anchor: 'start',  slot: 0 },
+          { x: X(mid),    text: d.times[mid],     anchor: 'middle', slot: 1 },
+          { x: W - m.r,   text: d.times[n - 1],   anchor: 'end',    slot: 2 }
+        ];
+      } else if (d.ts && d.ts.length === n && n > 1) {
         var NICE = [30, 60, 120, 180, 240, 360, 720];     // passos possíveis, em minutos
         var PREF = { '1h': 30, '6h': 60, '24h': 180 };
         var t0 = d.ts[0], t1 = d.ts[n - 1], span = t1 - t0;
@@ -314,7 +338,7 @@
         }
       }
       labels.forEach(function (lb) {
-        h += '<text class="nb-axis" x="' + lb.x.toFixed(1) + '" y="' + (H - 8) + '" text-anchor="middle">' + lb.text + '</text>';
+        h += '<text class="nb-axis' + (lb.slot != null ? ' nb-xl" data-slot="' + lb.slot : '') + '" x="' + lb.x.toFixed(1) + '" y="' + (H - 8) + '" text-anchor="' + (lb.anchor || 'middle') + '">' + lb.text + '</text>';
       });
 
       SERIES.forEach(function (s) {
@@ -459,6 +483,28 @@
         carregarDados(state.range);
       });
     });
+
+    // ---- RELÓGIO ----------------------------------------------------
+    // Troca só o texto dos 3 rótulos da visão 1h quando o minuto vira.
+    // Não redesenha o gráfico, então o hover do mouse continua fluido.
+    function atualizarRotulos1h() {
+      if (!rendered || state.range !== '1h') return;
+      var d = dataFor('1h');
+      refreshTimes(d, '1h');
+      var n = d.times.length, mid = Math.round((n - 1) / 2);
+      var idx = [0, mid, n - 1];
+      var els = svg.querySelectorAll('.nb-xl');
+      for (var i = 0; i < els.length; i++) {
+        var txt = d.times[idx[+els[i].getAttribute('data-slot')]];
+        if (els[i].textContent !== txt) els[i].textContent = txt;
+      }
+    }
+    function agendarRelogio() {
+      setTimeout(function () { atualizarRotulos1h(); agendarRelogio(); },
+                 60000 - (Date.now() % 60000) + 150);
+    }
+    agendarRelogio();
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) atualizarRotulos1h(); });
 
     // ---- INÍCIO -----------------------------------------------------
     buildLegend();

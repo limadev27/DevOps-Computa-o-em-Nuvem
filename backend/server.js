@@ -169,21 +169,62 @@ app.post('/api/subscribe', (req, res) => {
   res.status(201).json({ ok: true });
 });
 
-app.listen(PORTA, () => {
-  console.log(`Backend do Nimbus rodando na porta ${PORTA}`);
-});
+// ------------------------------------------------------------
+// MÉTRICAS DO GRÁFICO — /api/metrics?range=1h|6h|24h
+// Cada período devolve uma quantidade de pontos e um intervalo diferentes.
+// Os valores são simulados, mas determinísticos: dependem só do horário,
+// então duas requisições seguidas dão a mesma curva (sem "pular" a cada
+// atualização) e a curva anda junto com o relógio.
+// Para dados reais, troque gerarSerie() por uma consulta ao seu banco.
+// ------------------------------------------------------------
+const PERIODOS = {
+  '1h':  { n: 31, passoMin: 2 },
+  '6h':  { n: 37, passoMin: 10 },
+  '24h': { n: 49, passoMin: 30 },
+};
+const SERIES = [
+  { id: 'prod', base: 62, amp: 18, periodo: 180 },
+  { id: 'stag', base: 38, amp: 14, periodo: 240 },
+  { id: 'dev',  base: 22, amp: 10, periodo: 300 },
+];
+
+function ruido(x) {
+  const s = Math.sin(x * 12.9898) * 43758.5453;
+  return s - Math.floor(s);
+}
+
+function gerarSerie(serie, indice, ts) {
+  const min = ts / 60000;
+  const onda = Math.sin((2 * Math.PI * min) / serie.periodo + indice * 1.7) * serie.amp;
+  const tremor = (ruido(Math.floor(min / 2) + indice * 1000) - 0.5) * serie.amp * 0.35;
+  const v = Math.max(4, Math.min(97, serie.base + onda + tremor));
+  return Math.round(v * 10) / 10;
+}
 
 app.get('/api/metrics', (req, res) => {
-  const range = req.query.range; // "1h", "6h" ou "24h"
-  // Troque isto pela consulta real que fizer sentido pro seu projeto
-  // (ex.: contar usuários/assinantes por hora no banco).
-  // O formato de resposta tem que ser exatamente este:
-  res.json({
-    times: ['10:00', '10:30', '11:00'],
-    vals: {
-      prod: [60, 65, 70],
-      stag: [40, 38, 42],
-      dev:  [20, 22, 19],
-    },
+  const chave = PERIODOS[req.query.range] ? req.query.range : '1h';
+  const { n, passoMin } = PERIODOS[chave];
+  const passoMs = passoMin * 60000;
+  // Alinha o último ponto ao passo (ex.: 10:30, 11:00), pra os horários ficarem "redondos".
+  const fim = Math.floor(Date.now() / passoMs) * passoMs;
+
+  const ts = [];
+  for (let i = 0; i < n; i++) ts.push(fim - (n - 1 - i) * passoMs);
+
+  const vals = {};
+  SERIES.forEach((serie, idx) => {
+    vals[serie.id] = ts.map((t) => gerarSerie(serie, idx, t));
   });
+
+  // "ts" = horário em milissegundos (UTC). O navegador converte pro fuso do visitante.
+  // "times" = texto em UTC, só como reserva.
+  res.json({
+    ts,
+    times: ts.map((t) => new Date(t).toISOString().slice(11, 16)),
+    vals,
+  });
+});
+
+app.listen(PORTA, () => {
+  console.log(`Backend do Nimbus rodando na porta ${PORTA}`);
 });

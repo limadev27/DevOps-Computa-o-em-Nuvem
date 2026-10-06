@@ -136,7 +136,7 @@
       <svg class="nb-svg" role="img" aria-label="Gráfico de linhas do uso de CPU por cluster"></svg>
       <div class="nb-tip"></div>
     </div>
-    <p class="nb-hint">Clique na legenda para ocultar uma série. Dados de demonstração gerados no navegador.</p>
+    <p class="nb-hint">Clique na legenda para ocultar uma série. Dados de demonstração.</p>
   </div>
 
   <script>
@@ -212,6 +212,14 @@
         .then(function (dados) {
           // "dados" precisa vir no formato:
           // { times: ['10:00', ...], vals: { prod: [...], stag: [...], dev: [...] } }
+          // Se a API mandou "ts" (milissegundos UTC), monta os horários no
+          // fuso do visitante; senão usa os textos de "times" como vieram.
+          if (dados.ts && dados.ts.length) {
+            dados.times = dados.ts.map(function (t) {
+              var dt = new Date(t);
+              return pad(dt.getHours()) + ':' + pad(dt.getMinutes());
+            });
+          }
           cache[key] = dados;
           if (state.range === key) {
             render(true);

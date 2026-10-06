@@ -303,8 +303,8 @@
       var labelW = maxLen * 7 + 28;                       // largura aprox. do texto + folga
       var labels = [];                                    // [{ x, text }]
 
-      if (state.range === '1h' && n > 2) {
-        // 1h: três rótulos fixos — início, meio e fim (o fim é "agora").
+      if (n > 2) {
+        // 1h, 6h e 24h: três rótulos fixos — início, meio e fim (o fim é "agora").
         var mid = Math.round((n - 1) / 2);
         labels = [
           { x: m.l,       text: d.times[0],       anchor: 'start',  slot: 0 },
@@ -485,12 +485,12 @@
     });
 
     // ---- RELÓGIO ----------------------------------------------------
-    // Troca só o texto dos 3 rótulos da visão 1h quando o minuto vira.
+    // Troca só o texto dos 3 rótulos (1h, 6h e 24h) quando o minuto vira.
     // Não redesenha o gráfico, então o hover do mouse continua fluido.
-    function atualizarRotulos1h() {
-      if (!rendered || state.range !== '1h') return;
-      var d = dataFor('1h');
-      refreshTimes(d, '1h');
+    function atualizarRotulos() {
+      if (!rendered) return;
+      var d = dataFor(state.range);
+      refreshTimes(d, state.range);
       var n = d.times.length, mid = Math.round((n - 1) / 2);
       var idx = [0, mid, n - 1];
       var els = svg.querySelectorAll('.nb-xl');
@@ -500,11 +500,11 @@
       }
     }
     function agendarRelogio() {
-      setTimeout(function () { atualizarRotulos1h(); agendarRelogio(); },
+      setTimeout(function () { atualizarRotulos(); agendarRelogio(); },
                  60000 - (Date.now() % 60000) + 150);
     }
     agendarRelogio();
-    document.addEventListener('visibilitychange', function () { if (!document.hidden) atualizarRotulos1h(); });
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) atualizarRotulos(); });
 
     // ---- INÍCIO -----------------------------------------------------
     buildLegend();

@@ -1,0 +1,8 @@
+# Copie este arquivo para inventory.ini (arquivo privado, ignorado pelo Git).
+# Substitua o endereco IP e o usuario SSH pelos dados da VM de testes.
+# 203.0.113.10 e um IP ficticio de documentacao; nao e o servidor real.
+[nimbus]
+servidor-n2 ansible_host=203.0.113.10 ansible_user=ubuntu
+
+# Se necessario, informe a chave ao executar:
+# ansible-playbook -i ansible/inventory.ini ansible/site.yml --private-key ~/.ssh/id_ed25519

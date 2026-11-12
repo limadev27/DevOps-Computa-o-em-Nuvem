@@ -1,0 +1,169 @@
+---
+# N2 — reproduce a stack Nimbus em um servidor Ubuntu novo.
+# Executar do computador de controle: ansible-playbook -i ansible/inventory.ini ansible/site.yml
+- name: N2 - Preparar Linux e implantar Nimbus
+  hosts: nimbus
+  become: true
+  gather_facts: true
+  vars_files:
+    - group_vars/all.yml
+
+  pre_tasks:
+    - name: Confirmar plataforma suportada
+      ansible.builtin.assert:
+        that:
+          - ansible_facts['distribution'] == 'Ubuntu'
+          - (ansible_facts['distribution_major_version'] | int) >= 22
+          - ansible_facts['architecture'] in ['x86_64', 'aarch64']
+        fail_msg: 'Este playbook foi preparado para Ubuntu 22.04+ x86_64 ou aarch64. Adapte antes de usar outra distribuicao.'
+
+  tasks:
+    - name: Instalar dependencias basicas para Docker e Git
+      ansible.builtin.apt:
+        name:
+          - ca-certificates
+          - curl
+          - git
+          - gnupg
+          - openssl
+          - python3
+          - python3-apt
+        state: present
+        update_cache: true
+
+    - name: Criar diretorio para a chave do repositorio Docker
+      ansible.builtin.file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: '0755'
+
+    - name: Baixar chave GPG oficial do Docker
+      ansible.builtin.get_url:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        dest: /etc/apt/keyrings/docker.asc
+        mode: '0644'
+        force: false
+
+    - name: Configurar repositorio apt oficial do Docker
+      ansible.builtin.apt_repository:
+        repo: >-
+          deb [arch={{ {'x86_64': 'amd64', 'aarch64': 'arm64'}[ansible_facts['architecture']] }}
+          signed-by=/etc/apt/keyrings/docker.asc]
+          https://download.docker.com/linux/ubuntu
+          {{ ansible_facts['distribution_release'] }} stable
+        filename: docker
+        state: present
+        update_cache: true
+
+    - name: Instalar Docker Engine e Docker Compose v2
+      ansible.builtin.apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
+        state: present
+
+    - name: Garantir que Docker esteja iniciado e habilitado
+      ansible.builtin.service:
+        name: docker
+        state: started
+        enabled: true
+
+    - name: Criar diretorio de configuracoes persistentes
+      ansible.builtin.file:
+        path: '{{ nimbus_config_dir }}'
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Verificar se segredo de autenticacao ja foi criado
+      ansible.builtin.stat:
+        path: '{{ nimbus_env_file }}'
+      register: nimbus_env_status
+
+    - name: Gerar JWT_SECRET aleatorio apenas na primeira implantacao
+      ansible.builtin.command:
+        argv:
+          - openssl
+          - rand
+          - -hex
+          - '32'
+      register: jwt_secret_generated
+      when: not nimbus_env_status.stat.exists
+      no_log: true
+
+    - name: Guardar JWT_SECRET apenas no servidor (fora do Git)
+      ansible.builtin.copy:
+        dest: '{{ nimbus_env_file }}'
+        content: "JWT_SECRET={{ jwt_secret_generated.stdout }}\n"
+        owner: root
+        group: root
+        mode: '0600'
+      when: not nimbus_env_status.stat.exists
+      no_log: true
+
+    - name: Baixar codigo da N1 no servidor
+      ansible.builtin.git:
+        repo: '{{ nimbus_git_repository }}'
+        dest: '{{ nimbus_app_dir }}'
+        version: '{{ nimbus_git_ref }}'
+        update: true
+        force: false
+
+    - name: Conferir se arquivo Docker Compose existe
+      ansible.builtin.stat:
+        path: '{{ nimbus_app_dir }}/docker-compose.yml'
+      register: nimbus_compose_file
+
+    - name: Validar estrutura clonada
+      ansible.builtin.assert:
+        that:
+          - nimbus_compose_file.stat.exists
+        fail_msg: 'docker-compose.yml nao existe na raiz clonada.'
+
+    - name: Subir backend SQLite e frontend Nginx pelo Docker Compose
+      community.docker.docker_compose_v2:
+        project_src: '{{ nimbus_app_dir }}'
+        files:
+          - docker-compose.yml
+        project_name: nimbus_n2
+        env_files:
+          - '{{ nimbus_env_file }}'
+        state: present
+        build: always
+        pull: missing
+        remove_orphans: true
+      register: nimbus_stack
+
+    - name: Esperar pagina principal responder HTTP 200
+      ansible.builtin.uri:
+        url: 'http://127.0.0.1:{{ nimbus_http_port }}/'
+        status_code: 200
+        return_content: false
+      register: nimbus_web_check
+      retries: 20
+      delay: 3
+      until: nimbus_web_check.status | default(0) == 200
+
+    - name: Esperar API responder com status ok
+      ansible.builtin.uri:
+        url: 'http://127.0.0.1:{{ nimbus_http_port }}/api/health'
+        status_code: 200
+        return_content: true
+      register: nimbus_api_check
+      retries: 20
+      delay: 3
+      until: >-
+        (nimbus_api_check.status | default(0) == 200) and
+        ((nimbus_api_check.json | default({})).status | default('') == 'ok')
+
+    - name: Exibir resumo para a demonstracao da N2
+      ansible.builtin.debug:
+        msg:
+          - 'Playbook concluido: pagina e API responderam HTTP 200.'
+          - 'Acesso na propria VM: http://127.0.0.1:{{ nimbus_http_port }}'
+          - 'Acesso externo: http://IP_PUBLICO_DO_SERVIDOR:{{ nimbus_http_port }} (se firewall do provedor permitir).'
+          - 'O segredo JWT foi armazenado no servidor e nao foi publicado no Git.'

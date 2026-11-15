@@ -1,0 +1,9 @@
+---
+# Parametros nao secretos da N2. Ajustar somente se mudar o projeto da N1.
+nimbus_git_repository: 'https://github.com/limadev27/DevOps-Computa-o-em-Nuvem.git'
+nimbus_git_ref: 'main'
+nimbus_config_dir: '/opt/nimbus-n2'
+nimbus_app_dir: '/opt/nimbus-n2/app'
+nimbus_env_file: '/opt/nimbus-n2/.env'
+# A porta 8080:80 ja esta definida no docker-compose.yml da N1.
+nimbus_http_port: 8080
